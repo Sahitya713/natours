@@ -20,6 +20,7 @@ const userRouter = require('./routes/userRoutes');
 const reviewRouter = require('./routes/reviewRoutes');
 const viewRouter = require('./routes/viewRoutes');
 const bookingRouter = require('./routes/bookingRoutes');
+const bookingController = require('./controllers/bookingController');
 
 // to trust heroku
 app.enable('trust proxy');
@@ -71,6 +72,14 @@ const limiter = rateLimit({
 });
 
 app.use('/api', limiter);
+
+app.post(
+  '/webhook-checkout',
+  express.raw({ type: 'application/json' }),
+  bookingController.webhookCheckout
+);
+// we need to put this here instead of the booking routes for instance cause the webhookcheckut function requires the req in raw format
+// hence, it shouldnt be parsed into json format, which is right after this in the middleware stack (below)
 
 // BODY PARSER. Reading data from body into req.body
 app.use(express.json({ limit: '10kb' }));
