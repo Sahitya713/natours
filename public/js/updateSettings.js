@@ -7,8 +7,8 @@ export const updateSettings = async (data, type) => {
   try {
     const url =
       type === 'password'
-        ? 'http://localhost:3000/api/v1/users/update-password'
-        : 'http://localhost:3000/api/v1/users/update-me';
+        ? ':3000/api/v1/users/update-password'
+        : ':3000/api/v1/users/update-me';
 
     const res = await axios({
       method: 'PATCH',

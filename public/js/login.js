@@ -6,7 +6,10 @@ export const login = async (email, password) => {
   try {
     const res = await axios({
       method: 'POST',
-      url: 'http://localhost:3000/api/v1/users/login',
+      // url: 'http://localhost:3000/api/v1/users/login',
+      url: '/api/v1/users/login',
+      // we can remove the host here and just put ref so it will add the path to current url
+      // only cause the api and the website are hosted on the same url/server
       data: {
         email,
         password,
@@ -28,7 +31,7 @@ export const logout = async () => {
   try {
     const res = await axios({
       method: 'GET',
-      url: 'http://localhost:3000/api/v1/users/logout',
+      url: '/api/v1/users/logout',
     });
     // send invalid cookie without token to browser ==> hence u will be logged out.
     // IMPT set to true to reload from server instead of browser cache
