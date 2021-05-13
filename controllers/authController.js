@@ -11,7 +11,7 @@ const signToken = (id) =>
     expiresIn: process.env.JWT_EXPIRES_IN,
   });
 
-const createSendToken = (user, statusCode, res) => {
+const createSendToken = (user, statusCode, req, res) => {
   const token = signToken(user._id);
 
   const cookieOptions = {
@@ -19,8 +19,11 @@ const createSendToken = (user, statusCode, res) => {
       Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
     ),
     httpOnly: true,
+    secure: req.secure || req.headers['x-forwarded-proto'] === 'https',
   };
-  if (process.env.NODE_ENV === 'production') cookieOptions.secure = true;
+  // req.secure does not work for heroku cause it changes stuff internally, so the x forward shit is heroku specific
+  // but for this to work u still need to trust proxies like heroku (in app.js)
+
   res.cookie('jwt', token, cookieOptions);
   // remove password from output
   // eslint-disable-next-line no-param-reassign
@@ -47,7 +50,7 @@ exports.signup = catchAsync(async (req, res, next) => {
   // const url = 'http://localhost:3000/me';
 
   await new Email(newUser, url).sendWelcome();
-  createSendToken(newUser, 201, res);
+  createSendToken(newUser, 201, req, res);
 });
 
 exports.login = catchAsync(async (req, res, next) => {
@@ -68,7 +71,7 @@ exports.login = catchAsync(async (req, res, next) => {
   }
 
   // 3) return token
-  createSendToken(user, 200, res);
+  createSendToken(user, 200, req, res);
 });
 
 // exports.logout = (req, res) => {
@@ -238,7 +241,7 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
   // 3) update changedPassowrdAt property for the user
   // done in userModel
   // 4) log the user in, send JWT
-  createSendToken(user, 200, res);
+  createSendToken(user, 200, req, res);
 });
 
 exports.updatePassword = catchAsync(async (req, res, next) => {
@@ -257,5 +260,5 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
   user.passwordConfirm = passwordConfirm;
   await user.save();
   // 4) Log user in, send JWT
-  createSendToken(user, 200, res);
+  createSendToken(user, 200, req, res);
 });
