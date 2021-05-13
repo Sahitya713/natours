@@ -43,8 +43,19 @@ app.use(
   })
 );
 
+// cors - // set Access-Control-Allow-Origin on all incoming requests
+// for simple requests - get and post
 app.use(cors());
+// for other requests like patch and delete
 app.options('*', cors());
+// app.options('/api/v1/tours/:id', cors())
+
+// if you only want to restrict access
+// eg. front end and api hosted on diff domain
+// eg api.natours.com and natours.com
+// app.use(cors({
+//   origin: "https://www.natours.com"
+// }))
 
 // DEVELOPMENT LOGGING
 if (process.env.NODE_ENV === 'development') {
