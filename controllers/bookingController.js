@@ -20,7 +20,7 @@ exports.getCheckoutSession = catchAsync(async (req, res, next) => {
     // }&user=${req.user.id}&price=${tour.price}`,
     // we will use strip webhooks to get the session id to add bookings to our data base on production
     // for now this is not safe and just a work around cause anyone who knows this url structure can create booking without act paying
-    success_url: `${req.protocol}://${req.get('host')}/my-tours/`,
+    success_url: `${req.protocol}://${req.get('host')}/my-tours/?alert=booking`,
     cancel_url: `${req.protocol}://${req.get('host')}/tour/${tour.slug}`,
     customer_email: req.user.email,
     client_reference_id: req.params.tourId, // custom options field
@@ -29,7 +29,9 @@ exports.getCheckoutSession = catchAsync(async (req, res, next) => {
         // all these fields are defined by stripe, we cannot change or have custom here
         name: `${tour.name} Tour`,
         description: tour.summary,
-        images: [`https://www.natours.dev/img/tours/${tour.imageCover}`], // images have to be live images so we take from the alr deployed website for now
+        images: [
+          `${req.protocol}://${req.get('host')}/img/tours/${tour.imageCover}`,
+        ], // images have to be live images so we take from the alr deployed website for now
         amount: tour.price * 100, // convert to cents
         currency: 'usd',
         quantity: 1,
@@ -57,8 +59,9 @@ exports.getCheckoutSession = catchAsync(async (req, res, next) => {
 
 const createBookingCheckout = async (session) => {
   const tour = session.client_reference_id;
-  const user = (await User.findOne({ email: session.customer_email })).id;
-  const price = session.display_items[0].amount / 100;
+  const user = (await User.findOne({ email: session.customer_details.email }))
+    .id;
+  const price = session.amount_total / 100;
   await Booking.create({ tour, user, price });
 };
 
